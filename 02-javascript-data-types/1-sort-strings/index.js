@@ -14,10 +14,10 @@ export const sortStrings = (arr, param = 'asc') => {
 
       // В зависимости от param записываем в changePos нужное значение
       if (param === 'asc') {
-        changePos = a.toLowerCase().localeCompare(b.toLowerCase());
+        changePos = a.toLowerCase().localeCompare(b.toLowerCase(), ['ru', 'en']);
       }
       else {
-        changePos = a.toLowerCase().localeCompare(b.toLowerCase()) * -1;
+        changePos = a.toLowerCase().localeCompare(b.toLowerCase(), ['ru', 'en']) * -1;
       }
 
       // Нужно чтобы слова с заглавными первыми буквами шли первее чем со строчными
