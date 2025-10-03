@@ -6,25 +6,13 @@
  */
 
 export const sortStrings = (arr, param = 'asc') => {
-  if (arr.length > 1) { // Если у нас в массиве всего 1 элемент, нет смысла его сортировать, просто возвращаем его
-    let arrCopy = [...arr];
+  let arrCopy = [...arr];
 
-    arrCopy = arrCopy.sort((a, b) => {
-      let changePos;
+  const k = param === 'asc' ? 1 : -1;
 
-      // В зависимости от param записываем в changePos нужное значение
-      if (param === 'asc') {
-        changePos = a.localeCompare(b, ['ru', 'en'], {caseFirst: 'upper'});
-      }
-      else {
-        changePos = a.localeCompare(b, ['ru', 'en'], {caseFirst: 'upper'}) * -1;
-      }
+  arrCopy = arrCopy.sort((a, b) => {
+    return k * a.localeCompare(b, ['ru', 'en'], {caseFirst: 'upper'});
+  });
 
-      return changePos;
-    });
-
-    return arrCopy; // Возвращаем отсортированный массив
-  }
-
-  return arr;
+  return arrCopy; // Возвращаем отсортированный массив
 };
