@@ -6,13 +6,11 @@
  */
 
 export const sortStrings = (arr, param = 'asc') => {
-  let arrCopy = [...arr];
+  const arrCopy = [...arr];
 
   const k = param === 'asc' ? 1 : -1;
 
-  arrCopy = arrCopy.sort((a, b) => {
+  return arrCopy.sort((a, b) => {
     return k * a.localeCompare(b, ['ru', 'en'], {caseFirst: 'upper'});
   });
-
-  return arrCopy; // Возвращаем отсортированный массив
 };
