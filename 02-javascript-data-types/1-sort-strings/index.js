@@ -6,7 +6,7 @@
  */
 
 export const sortStrings = (arr, param = 'asc') => {
-  let arrCopy = [...arr];
+  const arrCopy = [...arr];
 
   const k = param === 'asc' ? 1 : -1;
 
