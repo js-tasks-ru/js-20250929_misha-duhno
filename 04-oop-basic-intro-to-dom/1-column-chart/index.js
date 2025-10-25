@@ -110,6 +110,7 @@ export default class ColumnChart {
   }
 
   update(data) {
+    this.remove();
     this.data = data;
     this.element = this.renderTemplate();
   }
