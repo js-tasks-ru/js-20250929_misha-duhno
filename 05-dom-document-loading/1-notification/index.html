@@ -9,12 +9,15 @@
 
 <script type="module">
   import NotificationMessage from './index.js';
+  let index = 1;
 
   btn1.addEventListener('click', () => {
     const notification = new NotificationMessage('Hello World', {
       duration: 2000,
-      type: 'success'
+      type: index % 2 === 0 ? 'success' : 'error'
     });
+
+    index += 1;
 
     notification.show();
   });

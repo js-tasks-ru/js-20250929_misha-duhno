@@ -111,7 +111,7 @@ export default class ColumnChart {
 
   update(data) {
     this.data = data;
-    this.element.querySelector('[data-element="body"]').innerHTML = this.createChartTemplate();
+    this.element.querySelector('[data-element="body"]').replaceWith(this.createChartTemplate());
   }
 
   remove() {
