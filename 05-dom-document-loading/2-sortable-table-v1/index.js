@@ -1,150 +1,125 @@
 export default class SortableTable {
   element;
-  subElements;
-  sortedColumn;
-  sortType;
+  subElements = {};
 
   constructor(headerConfig = [], data = []) {
     this.headerConfig = headerConfig;
-    this.data = data;
+    this.data = Array.isArray(data) ? data : [];
 
-    this.element = this.createTableTemplate();
+    this.renderElement();
   }
 
-  updateArrowPosition(field) {
-    this.element.querySelector('[data-element="header"]')
-      .querySelector(`[data-id="${this.sortedColumn}"]`)
-      .dataset.order = this.sortType;
-  }
-
-  createSortArrowElement() {
-    return '<span data-element="arrow" class="sortable-table__sort-arrow"> <span class="sort-arrow"></span></span>';
-  }
-
-  createHeaderCellElement({id, title, sortable}) {
+  createHeaderCellTemplate({ id, title, sortable }) {
     return `
       <div class="sortable-table__cell"
-      data-id="${id}"
-      data-sortable="${sortable}"
-      ${this.sortedColumn === id ? 'data-order="' + this.sortType + '"' : ''}>
-          <span>${title}</span>
-          ${sortable ? this.createSortArrowElement() : ''}
+        data-id="${id}"
+        data-sortable="${sortable}">
+        <span>${title}</span>
       </div>
     `;
   }
 
-  createTableHeaderTemplate() {
-    const headerTemplate = document.createElement('div');
+  createHeaderTemplate() {
+    const headerElement = document.createElement('div');
+    headerElement.classList.add('sortable-table__header', 'sortable-table__row');
+    headerElement.setAttribute('data-element', 'header');
 
-    headerTemplate.setAttribute('data-element', 'header');
-    headerTemplate.classList.add('sortable-table__header');
-    headerTemplate.classList.add('sortable-table__row');
+    headerElement.innerHTML = this.headerConfig
+      .map(item => this.createHeaderCellTemplate(item))
+      .join('');
 
-    let cellsTemplate = '';
-
-    for (const cell of this.headerConfig) {
-      cellsTemplate += this.createHeaderCellElement(cell);
-    }
-
-    headerTemplate.innerHTML = cellsTemplate;
-
-    return headerTemplate;
+    this.subElements.header = headerElement;
+    return headerElement;
   }
 
-  createBodyCustomCellElement(data, template) {
-    return template(data);
+  createBodyRowTemplate(item) {
+    const link = `<a href="/products/${item.id}" class="sortable-table__row">`;
+
+    const cells = this.headerConfig.map(({ id, template }) => {
+      return template
+        ? template(item[id])
+        : `<div class="sortable-table__cell">${item[id]}</div>`;
+    }).join('');
+
+    return link + cells + '</a>';
   }
 
-  createBodyCellElement(data) {
-    return `<div class="sortable-table__cell">${data}</div>`;
-  }
+  createBodyTemplate() {
+    const bodyElement = document.createElement('div');
+    bodyElement.classList.add('sortable-table__body');
+    bodyElement.setAttribute('data-element', 'body');
 
-  createTableRowElement(rowData) {
-    let rowElement = `<a href="/products/3d-ochki-optoma-zd301" class="sortable-table__row">`;
+    bodyElement.innerHTML = this.data
+      .map(item => this.createBodyRowTemplate(item))
+      .join('');
 
-    for (const cell of this.headerConfig) {
-      switch (cell.sortType) {
-      case 'string':
-        rowElement += this.createBodyCellElement(rowData[cell.id]);
-        break;
-      case 'number':
-        rowElement += this.createBodyCellElement(rowData[cell.id]);
-        break;
-      default:
-        if (cell.template) {
-          rowElement += this.createBodyCustomCellElement(rowData[cell.id], cell.template);
-        } else {
-          rowElement += this.createBodyCellElement(rowData[cell.id]);
-        }
-        break;
-      }
-    }
-    rowElement += '</a>';
-
-    return rowElement;
-  }
-
-  createTableBodyTemplate() {
-    const tableBodyTemplate = document.createElement('div');
-    tableBodyTemplate.setAttribute('data-element', 'body');
-    tableBodyTemplate.classList.add('sortable-table__body');
-
-    let cellsTemplate = '';
-
-    for (const rowData of this.data) {
-      cellsTemplate += this.createTableRowElement(rowData);
-    }
-    tableBodyTemplate.innerHTML = cellsTemplate;
-
-    return tableBodyTemplate;
+    this.subElements.body = bodyElement;
+    return bodyElement;
   }
 
   createTableTemplate() {
-    const container = document.createElement('div');
-    container.classList.add('sortable-table');
+    const wrapperElement = document.createElement('div');
+    wrapperElement.classList.add('sortable-table');
 
-    const headerTemplate = this.createTableHeaderTemplate();
-    const bodyTemplate = this.createTableBodyTemplate();
-    this.subElements = {
-      header: headerTemplate,
-      body: bodyTemplate
-    };
+    wrapperElement.append(this.createHeaderTemplate());
+    wrapperElement.append(this.createBodyTemplate());
 
-    container.appendChild(headerTemplate);
-    container.appendChild(bodyTemplate);
-
-    return container;
+    return wrapperElement;
   }
 
-  update(field) {
-    this.element.querySelector('[data-element="body"]').replaceWith(this.createTableBodyTemplate());
-    this.updateArrowPosition(field);
+  renderElement() {
+    const tableElement = this.createTableTemplate();
+    this.element = tableElement;
   }
 
-  sort(field, type = 'asc') {
-    const sortType = this.headerConfig.find((cell) => cell.id === field)?.sortType;
-    const k = type === 'asc' ? 1 : -1;
+  sort(field, order = 'asc') {
+    const column = this.headerConfig.find(item => item.id === field);
+    if (!column || !column.sortable) return;
 
-    this.sortedColumn = field;
-    this.sortType = type;
+    const direction = order === 'asc' ? 1 : -1;
+    const sortType = column.sortType;
 
-    this.data.sort((a, b) => {
-      if (sortType === 'string') {
-        return k * a[field].localeCompare(b[field], ['ru', 'en'], {caseFirst: 'upper'});
-      } else {
-        return k * (a[field] - b[field]);
+    const sortedData = [...this.data].sort((a, b) => {
+      switch (sortType) {
+      case 'number':
+        return direction * (a[field] - b[field]);
+      case 'string':
+        return direction * a[field].localeCompare(b[field], ['ru', 'en'], { caseFirst: 'upper' });
+      default:
+        return 0;
       }
     });
 
-    this.update(field);
+    this.data = sortedData;
+
+    this.subElements.body.innerHTML = this.data
+      .map(item => this.createBodyRowTemplate(item))
+      .join('');
+
+    // Обновляем визуальный порядок
+    this.updateHeaderSortState(field, order);
+  }
+
+  updateHeaderSortState(field, order) {
+    const allColumns = this.subElements.header.querySelectorAll('[data-id]');
+    for (const column of allColumns) {
+      column.removeAttribute('data-order');
+    }
+
+    const currentColumn = this.subElements.header.querySelector(`[data-id="${field}"]`);
+    if (currentColumn) {
+      currentColumn.setAttribute('data-order', order);
+    }
   }
 
   remove() {
-    this.element.remove();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 
   destroy() {
     this.remove();
+    this.subElements = {};
   }
 }
-
