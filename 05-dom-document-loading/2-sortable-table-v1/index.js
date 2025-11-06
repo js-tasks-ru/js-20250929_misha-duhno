@@ -11,6 +11,12 @@ export default class SortableTable {
     this.element = this.createTableTemplate();
   }
 
+  updateArrowPosition(field) {
+    this.element.querySelector('[data-element="header"]')
+      .querySelector(`[data-id="${this.sortedColumn}"]`)
+      .dataset.order = this.sortType;
+  }
+
   createSortArrowElement() {
     return '<span data-element="arrow" class="sortable-table__sort-arrow"> <span class="sort-arrow"></span></span>';
   }
@@ -28,7 +34,7 @@ export default class SortableTable {
   }
 
   createTableHeaderTemplate() {
-    let headerTemplate = document.createElement('div');
+    const headerTemplate = document.createElement('div');
 
     headerTemplate.setAttribute('data-element', 'header');
     headerTemplate.classList.add('sortable-table__header');
@@ -79,7 +85,7 @@ export default class SortableTable {
   }
 
   createTableBodyTemplate() {
-    let tableBodyTemplate = document.createElement('div');
+    const tableBodyTemplate = document.createElement('div');
     tableBodyTemplate.setAttribute('data-element', 'body');
     tableBodyTemplate.classList.add('sortable-table__body');
 
@@ -99,7 +105,10 @@ export default class SortableTable {
 
     const headerTemplate = this.createTableHeaderTemplate();
     const bodyTemplate = this.createTableBodyTemplate();
-    this.subElements = {body: bodyTemplate};
+    this.subElements = {
+      header: headerTemplate,
+      body: bodyTemplate
+    };
 
     container.appendChild(headerTemplate);
     container.appendChild(bodyTemplate);
@@ -107,12 +116,9 @@ export default class SortableTable {
     return container;
   }
 
-  update() {
-    const table = document.querySelector('.sortable-table');
-    const tableTemplate = this.createTableTemplate();
-    this.element = tableTemplate;
-
-    table.replaceWith(tableTemplate);
+  update(field) {
+    this.element.querySelector('[data-element="body"]').replaceWith(this.createTableBodyTemplate());
+    this.updateArrowPosition(field);
   }
 
   sort(field, type = 'asc') {
@@ -130,14 +136,15 @@ export default class SortableTable {
       }
     });
 
-    this.update();
+    this.update(field);
+  }
+
+  remove() {
+    this.element.remove();
   }
 
   destroy() {
-    this.element.remove();
-    this.subElements = {};
-    this.sortedColumn = '';
-    this.sortType = '';
+    this.remove();
   }
 }
 

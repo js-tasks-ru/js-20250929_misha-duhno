@@ -31,30 +31,27 @@ export default class NotificationMessage {
     return container;
   }
 
-  show(target) {
+  show(target = document.body) {
     if (NotificationMessage.lastNotification) {
-      this.remove();
-      clearTimeout(NotificationMessage.lastNotification.timeoutId);
+      NotificationMessage.lastNotification.hide();
     }
     NotificationMessage.lastNotification = this;
 
-    if (target) {
-      target.appendChild(this.element);
-    } else {
-      document.body.appendChild(this.element);
-    }
+    target.appendChild(this.element);
 
     this.timeoutId = setTimeout(() => this.remove(), this.duration);
   }
 
   remove() {
-    const notificationsArr = document.getElementsByClassName('notification');
-    for (const notification of notificationsArr) {
-      notification.remove();
-    }
+    this.element.remove();
+  }
+
+  hide() {
+    this.remove();
+    clearTimeout(this.timeoutId);
   }
 
   destroy() {
-    this.element.remove();
+    this.remove();
   }
 }
