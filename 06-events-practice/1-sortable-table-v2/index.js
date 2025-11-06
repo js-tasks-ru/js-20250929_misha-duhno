@@ -27,6 +27,7 @@ export default class SortableTable {
 
   createHeaderCellTemplate({ id, title, sortable }) {
     const orderAttr = (this.sorted && this.sorted.id === id) ? `data-order="${this.sorted.order}"` : '';
+
     return `
       <div class="sortable-table__cell" data-id="${id}" data-sortable="${sortable}" ${orderAttr}>
         <span>${title}</span>
